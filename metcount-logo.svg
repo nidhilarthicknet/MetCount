@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 316 316" role="img" aria-labelledby="title desc">
+<title id="title">Met-Count — A Metxon Product</title><desc id="desc">Three blue upward arrows above an open blue book, with MET-COUNT and A METXON PRODUCT lettering.</desc>
+<rect width="316" height="316" fill="#d9d9d9"/>
+<g fill="#4f70ad">
+<path d="M160 54 143 79h11v74h12V79h11z"/>
+<path d="M143 75 127 99h10v54h11V99h10z"/>
+<path d="M177 75 161 99h10v54h11V99h10z"/>
+<path d="M111 151 135 112h-8l-24 39z"/>
+<path d="M205 151 181 112h8l24 39z"/>
+<path d="M108 154c18-4 33 1 50 10v-9c-17-10-33-14-45-11z"/>
+<path d="M208 154c-18-4-33 1-50 10v-9c17-10 33-14 45-11z"/>
+<path d="M104 159c19-3 37 1 54 10 17-9 35-13 54-10l-4 7c-18-2-34 2-50 11-16-9-32-13-50-11z"/>
+</g>
+<text x="158" y="194" text-anchor="middle" fill="#246c70" font-family="Arial,sans-serif" font-size="21" font-weight="800" letter-spacing="3">MET-COUNT</text>
+<text x="158" y="216" text-anchor="middle" fill="#555" font-family="Arial,sans-serif" font-size="11" font-weight="700" letter-spacing="1.2">A METXON PRODUCT</text>
+</svg>
