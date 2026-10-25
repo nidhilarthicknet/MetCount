@@ -19,4 +19,5 @@ setEliteUI=function(){metcountOriginalSetEliteUI();const elite=subscriptionIsEli
 const metcountOriginalShowPage=showPage;
 showPage=async function(page){await metcountOriginalShowPage(page);if(page==='metrade'){setEliteUI();await loadAutoSellOrders();if(subscriptionIsElite()&&$('graphTicker').value)await drawEliteGraph($('graphTicker').value);}};
 bindGraphEvents();
-setInterval(()=>{monitorAutoSellOrders();},60000);
+document.querySelectorAll('[data-graph-range]').forEach(b=>b.classList.toggle('active',b.dataset.graphRange===graphRange));
+setInterval(()=>{if(unlocked&&!subscriptionIsElite())setEliteUI();monitorAutoSellOrders();},60000);
