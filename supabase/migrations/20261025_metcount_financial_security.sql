@@ -377,3 +377,61 @@ grant execute on function public.metxon_sell_stock(text,numeric) to authenticate
 grant execute on function public.metxon_buy_subscription(text,numeric) to authenticated;
 create index if not exists market_snapshots_ticker_asof_idx on public.market_snapshots(ticker,as_of desc);
 create index if not exists subscriptions_user_tier_expiry_idx on public.subscriptions(user_id,tier,expires_at desc);
+
+
+-- Follow-up hardening for the corporate MetCount stock buttons:
+-- posted client prices are ignored; a recent server-recorded market snapshot is authoritative.
+create or replace function public.metxon_buy_stock(stock_ticker text,share_price numeric)
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $function$
+declare a public.profiles%rowtype; h public.portfolio_holdings%rowtype; snap public.market_snapshots%rowtype; t text:=upper(trim(coalesce(stock_ticker,''))); cur text; p numeric; inr numeric; jp numeric; avg_new numeric;
+begin
+ if auth.uid() is null then raise exception 'Sign in first.'; end if;
+ if t !~ '^[A-Z0-9.^=-]{1,20}$' then raise exception 'Invalid stock ticker.'; end if;
+ select * into snap from public.market_snapshots where ticker=t and as_of>=now()-interval '15 minutes' order by as_of desc limit 1;
+ if snap.id is null then raise exception 'Search the stock again to create a fresh quote before trading.'; end if;
+ p:=nullif(snap.payload->>'currentPrice','')::numeric;cur:=upper(coalesce(snap.payload->>'currency',''));
+ if p is null or p<=0 then raise exception 'The saved quote is invalid.'; end if;
+ inr:=case cur when 'INR' then p when 'USD' then p/0.012 when 'EUR' then p/0.011 when 'GBP' then p/0.0095 when 'JPY' then p/1.8 when 'KRW' then p/16.2 else null end;
+ if inr is null or inr<=0 then raise exception using message='Trading is unavailable for quote currency '||cur; end if;
+ jp:=round(inr/100,2);if jp<=0 then raise exception 'Share price is below supported wallet precision.'; end if;
+ select * into a from public.profiles where id=auth.uid() for update;
+ if a.id is null then raise exception 'Account not found.'; end if;
+ if coalesce(a.jp_balance,0)<jp then raise exception 'Insufficient InstaPay balance. Required: % π',jp; end if;
+ select * into h from public.portfolio_holdings where user_id=a.id and ticker=t for update;
+ if h.user_id is null then insert into public.portfolio_holdings(user_id,ticker,shares,average_buy) values(a.id,t,1,inr);
+ else avg_new:=((coalesce(h.average_buy,inr)*h.shares)+inr)/(h.shares+1);update public.portfolio_holdings set shares=shares+1,average_buy=avg_new,updated_at=now() where user_id=a.id and ticker=t; end if;
+ update public.profiles set jp_balance=jp_balance-jp,updated_at=now() where id=a.id;
+ insert into public.transactions(user_id,type,amount,note) values(a.id,'Stock Buy (InstaPay)',-jp,t||'; trusted market quote, INR equivalent ₹'||round(inr,2));
+ insert into public.metxon_jp_transactions(user_id,amount,transaction_type,note) values(a.id,-jp,'debit','Metrade stock purchase '||t);
+ insert into public.stock_observations(user_id,ticker,price) values(a.id,t,inr);
+ return jsonb_build_object('success',true,'ticker',t,'price_inr',round(inr,2),'amount_jp',jp,'currency',cur);
+end; $function$;
+
+create or replace function public.metxon_sell_stock(stock_ticker text,share_price numeric)
+returns jsonb language plpgsql security definer set search_path=public,pg_temp as $function$
+declare a public.profiles%rowtype; h public.portfolio_holdings%rowtype; snap public.market_snapshots%rowtype; t text:=upper(trim(coalesce(stock_ticker,''))); cur text; p numeric; inr numeric; jp numeric;
+begin
+ if auth.uid() is null then raise exception 'Sign in first.'; end if;
+ if t !~ '^[A-Z0-9.^=-]{1,20}$' then raise exception 'Invalid stock ticker.'; end if;
+ select * into snap from public.market_snapshots where ticker=t and as_of>=now()-interval '15 minutes' order by as_of desc limit 1;
+ if snap.id is null then raise exception 'Search the stock again to create a fresh quote before trading.'; end if;
+ p:=nullif(snap.payload->>'currentPrice','')::numeric;cur:=upper(coalesce(snap.payload->>'currency',''));
+ if p is null or p<=0 then raise exception 'The saved quote is invalid.'; end if;
+ inr:=case cur when 'INR' then p when 'USD' then p/0.012 when 'EUR' then p/0.011 when 'GBP' then p/0.0095 when 'JPY' then p/1.8 when 'KRW' then p/16.2 else null end;
+ if inr is null or inr<=0 then raise exception using message='Trading is unavailable for quote currency '||cur; end if;
+ jp:=round(inr/100,2);if jp<=0 then raise exception 'Share sale value is below supported wallet precision.'; end if;
+ select * into a from public.profiles where id=auth.uid() for update;
+ select * into h from public.portfolio_holdings where user_id=a.id and ticker=t for update;
+ if h.user_id is null or h.shares<1 then raise exception using message='No shares held for '||t; end if;
+ if h.shares=1 then delete from public.portfolio_holdings where user_id=a.id and ticker=t;
+ else update public.portfolio_holdings set shares=shares-1,updated_at=now() where user_id=a.id and ticker=t; end if;
+ update public.profiles set jp_balance=jp_balance+jp,updated_at=now() where id=a.id;
+ insert into public.transactions(user_id,type,amount,note) values(a.id,'Stock Sell (InstaPay)',jp,t||'; trusted market quote, INR equivalent ₹'||round(inr,2));
+ insert into public.metxon_jp_transactions(user_id,amount,transaction_type,note) values(a.id,jp,'credit','Metrade stock sale '||t);
+ insert into public.stock_observations(user_id,ticker,price) values(a.id,t,inr);
+ return jsonb_build_object('success',true,'ticker',t,'price_inr',round(inr,2),'amount_jp',jp,'currency',cur);
+end; $function$;
+revoke all on function public.metxon_buy_stock(text,numeric) from public,anon;
+revoke all on function public.metxon_sell_stock(text,numeric) from public,anon;
+grant execute on function public.metxon_buy_stock(text,numeric) to authenticated;
+grant execute on function public.metxon_sell_stock(text,numeric) to authenticated;
