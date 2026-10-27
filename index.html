@@ -314,7 +314,7 @@ boot().catch(e=>{console.error(e);showGateForm('loginForm','MetCount could not i
     if(b.matches('#confirmPay,#payNow,#checkoutPay,#sendPayment,#installConfirm'))return b;
     if(navTarget(b))return null;
     const label=(b.innerText||b.value||b.getAttribute('aria-label')||'').trim();
-    return /pay securely|pay now|confirm payment|review and send|send payment|buy now|checkout cart|subscribe now|buy\s*\/\s*renew|confirm purchase|install with metpay|install .+ for|purchase now/i.test(label)?b:null;
+    return /pay securely|pay now|confirm payment|review and send|send payment|send jp|send money|transfer|buy now|checkout cart|subscribe now|buy\s*\/\s*renew|confirm purchase|install with metpay|install .+ for|purchase now/i.test(label)?b:null;
   }
   document.addEventListener('click',async function(e){
     const pay=paymentTarget(e.target);
@@ -332,7 +332,7 @@ boot().catch(e=>{console.error(e);showGateForm('loginForm','MetCount could not i
       replaying.add(nav);nav.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true,view:window}));replaying.delete(nav);
     }
   },true);
-  const successPattern=/(payment confirmed|payment successful|order confirmed|transaction complete|transfer sent successfully|app installed:|installed .+ for|purchase complete|successfully installed|payment was verified)/i;
+  const successPattern=/(payment confirmed|payment successful|order confirmed|transaction complete|transfer sent successfully|transfer successful|transfer complete|successfully transferred|app installed:|installed .+ for|purchase complete|successfully installed|payment was verified|payment complete|charged successfully)/i;
   const observer=new MutationObserver(records=>{
     if(!paymentArmed||successTransitionRunning)return;
     const changedText=records.map(m=>{
