@@ -305,7 +305,10 @@ boot().catch(e=>{console.error(e);showGateForm('loginForm','MetCount could not i
   };
   function navTarget(node){
     if(!(node instanceof Element))return null;
-    return node.closest('button[data-page],button[data-nav],nav button,a[href^="#"]');
+    const target=node.closest('button,a[href],input[type="submit"],[role="button"]');
+    if(!target)return null;
+    if(target.matches('button[onclick*="tryShow("],button[onclick*="openApp("]'))return null;
+    return target;
   }
   function paymentTarget(node){
     if(!(node instanceof Element))return null;
