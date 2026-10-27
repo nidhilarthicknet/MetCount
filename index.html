@@ -312,8 +312,9 @@ boot().catch(e=>{console.error(e);showGateForm('loginForm','MetCount could not i
     const b=node.closest('button,input[type="submit"]');
     if(!b)return null;
     if(b.matches('#confirmPay,#payNow,#checkoutPay,#sendPayment,#installConfirm'))return b;
+    if(navTarget(b))return null;
     const label=(b.innerText||b.value||b.getAttribute('aria-label')||'').trim();
-    return /pay securely|confirm payment|review and send|send payment|buy now|checkout cart|subscribe now|confirm purchase|install .+ for|purchase now/i.test(label)?b:null;
+    return /pay securely|pay now|confirm payment|review and send|send payment|buy now|checkout cart|subscribe now|buy\s*\/\s*renew|confirm purchase|install with metpay|install .+ for|purchase now/i.test(label)?b:null;
   }
   document.addEventListener('click',async function(e){
     const pay=paymentTarget(e.target);
