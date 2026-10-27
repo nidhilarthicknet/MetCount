@@ -263,7 +263,8 @@ boot().catch(e=>{console.error(e);showGateForm('loginForm','MetCount could not i
 </script><script src="metcount-chart.js"></script>
 <!-- Metxon ecosystem navigation and payment transitions -->
 <style id="metxon-transition-style">
-#metxon-transition-layer{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;background:#03050a;color:#fff;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .22s ease}
+#metxon-transition-layer{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#03050a;color:#fff;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .65s ease;border:0;padding:0;max-width:none;max-height:none;width:100vw;height:100dvh;margin:0;overflow:hidden}
+#metxon-transition-layer::backdrop{background:#03050a}
 #metxon-transition-layer.is-visible{opacity:1;visibility:visible;pointer-events:auto}
 #metxon-transition-layer .mx-content{text-align:center;padding:24px;font-family:inherit}
 #metxon-transition-layer .mx-word{font-size:clamp(48px,10vw,112px);font-weight:1000;letter-spacing:-.06em;line-height:1.05}
@@ -272,7 +273,7 @@ boot().catch(e=>{console.error(e);showGateForm('loginForm','MetCount could not i
 #metxon-transition-layer.is-revealed .mx-xon{opacity:1;transform:translateX(0)}
 #metxon-transition-layer .mx-sub{margin-top:16px;color:#a9b7d1;font-size:clamp(13px,2vw,17px);letter-spacing:.04em}
 </style>
-<div id="metxon-transition-layer" aria-live="polite" aria-hidden="true"><div class="mx-content"><div class="mx-word"><span class="mx-met">MET</span><span class="mx-xon">XON</span></div><div class="mx-sub">Please wait…</div></div></div>
+<dialog id="metxon-transition-layer" aria-live="polite" aria-hidden="true"><div class="mx-content"><div class="mx-word"><span class="mx-met">MET</span><span class="mx-xon">XON</span></div><div class="mx-sub">Please wait…</div></div></dialog>
 <script id="metxon-transition-controller">
 (function(){
   const root=document.getElementById('metxon-transition-layer');
@@ -296,11 +297,15 @@ boot().catch(e=>{console.error(e);showGateForm('loginForm','MetCount could not i
       sub.textContent='Please wait…';
     }
     root.setAttribute('aria-hidden','false');
+    if(typeof root.showModal==='function'&&!root.open){try{root.showModal();}catch(e){root.setAttribute('open','');}}
     root.classList.add('is-visible');root.classList.remove('is-revealed');
-    await wait(90);root.classList.add('is-revealed');
-    await wait(mode==='metware'?420:mode==='metpay'?320:260);
-    root.classList.remove('is-visible','is-revealed');root.setAttribute('aria-hidden','true');
-    await wait(230);
+    await wait(220);root.classList.add('is-revealed');
+    await wait(mode==='metware'?1350:mode==='metpay'?1150:1050);
+    root.classList.remove('is-visible','is-revealed');
+    await wait(650);
+    if(typeof root.close==='function'&&root.open){try{root.close();}catch(e){root.removeAttribute('open');}}
+    root.setAttribute('aria-hidden','true');
+    await wait(180);
     busy=false;
   };
   function navTarget(node){
