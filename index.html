@@ -265,6 +265,8 @@ boot().catch(e=>{console.error(e);showGateForm('loginForm','MetCount could not i
 <style id="metxon-transition-style">
 #metxon-transition-layer{position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:#03050a;color:#fff;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .65s ease;border:0;padding:0;max-width:none;max-height:none;width:100vw;height:100dvh;margin:0;overflow:hidden}
 #metxon-transition-layer::backdrop{background:#03050a}
+#metxon-transition-layer:not([open]){display:none}
+#metxon-transition-layer[open]{display:flex}
 #metxon-transition-layer.is-visible{opacity:1;visibility:visible;pointer-events:auto}
 #metxon-transition-layer .mx-content{text-align:center;padding:24px;font-family:inherit}
 #metxon-transition-layer .mx-word{font-size:clamp(48px,10vw,112px);font-weight:1000;letter-spacing:-.06em;line-height:1.05}
