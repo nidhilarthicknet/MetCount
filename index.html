@@ -332,10 +332,13 @@ boot().catch(e=>{console.error(e);showGateForm('loginForm','MetCount could not i
     }
   },true);
   const successPattern=/(payment confirmed|payment successful|order confirmed|transaction complete|transfer sent successfully|app installed:|installed .+ for|purchase complete|successfully installed|payment was verified)/i;
-  const observer=new MutationObserver(()=>{
+  const observer=new MutationObserver(records=>{
     if(!paymentArmed||successTransitionRunning)return;
-    const text=(document.body?.innerText||'').slice(-9000);
-    if(!successPattern.test(text))return;
+    const changedText=records.map(m=>{
+      if(m.type==='characterData')return m.target?.textContent||'';
+      return Array.from(m.addedNodes||[]).map(n=>n.textContent||'').join(' ');
+    }).join(' ').slice(-5000);
+    if(!successPattern.test(changedText))return;
     successTransitionRunning=true;paymentArmed=false;
     (async()=>{await window.metxonRunTransition('metware');await window.metxonRunTransition('metxon');})();
   });
