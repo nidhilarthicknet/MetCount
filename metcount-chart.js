@@ -36,14 +36,17 @@ async function drawEliteGraph(t){
   if(graphRange!=='max'&&cutoffs[graphRange])pts=pts.filter(p=>Date.parse(p.at)>=Date.now()-cutoffs[graphRange]);
   if(!pts.length){paintEmptyGraph('No quote history is available for '+t+' in '+graphRangeLabels[graphRange]+'. Try Max or refresh this holding.');return;}
   const size=prepareGraphCanvas(cv),ctx=size.ctx,w=size.w,h=size.h;
-  const left=108,right=16,top=18,bottom=42,plotW=Math.max(40,w-left-right),plotH=Math.max(40,h-top-bottom);
   const values=pts.map(p=>p.priceInr),min=Math.min(...values),max=Math.max(...values),span=max-min||Math.max(1,max*.02);
   const lo=Math.max(0,min-span*.08),hi=max+span*.08,range=hi-lo||1;
+  ctx.font='13px system-ui, sans-serif';
+  const axisLabels=Array.from({length:5},(_,i)=>fmt(hi-(hi-lo)*i/4));
+  const left=Math.max(108,Math.ceil(Math.max(...axisLabels.map(label=>ctx.measureText(label).width))+14)),right=16,top=18,bottom=42;
+  const plotW=Math.max(40,w-left-right),plotH=Math.max(40,h-top-bottom);
   ctx.clearRect(0,0,w,h);ctx.fillStyle='#081321';ctx.fillRect(0,0,w,h);
   ctx.font='13px system-ui, sans-serif';ctx.textBaseline='middle';ctx.lineWidth=1;ctx.strokeStyle='#29435f';ctx.fillStyle='#c0d3eb';
   for(let i=0;i<=4;i++){
    const y=top+plotH*i/4;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();
-   ctx.textAlign='left';ctx.fillText(fmt(hi-(hi-lo)*i/4),5,y);
+   ctx.textAlign='left';ctx.fillText(axisLabels[i],5,y);
   }
   ctx.textBaseline='alphabetic';ctx.font='12px system-ui, sans-serif';ctx.fillStyle='#bfd1e7';
   for(let i=0;i<=4;i++){
