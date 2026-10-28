@@ -193,7 +193,7 @@ $('metAiForm').addEventListener('submit',async e=>{
   if(!t)throw new Error('Could not resolve this company to a listed ticker.');
   $('metAiTicker').value=quote.companyName;
   $('metAiOutput').textContent='MET AI is requesting market analysis for '+quote.companyName+' ('+t+')…';
-  const r=await sb.functions.invoke('metxon-market-ai',{body:{ticker:t}});
+  const r=await sb.functions.invoke('metxon-market-ai',{body:{ticker:t,displayCurrency:security.currency_code||'JP'}});
   if(r.error){let message=r.error.message||'MET AI request failed.';try{const ctx=r.error.context;if(ctx&&typeof ctx.clone==='function'){const body=await ctx.clone().json();if(body&&body.error)message=body.error;}}catch(_){}throw new Error(message);}
   if(!r.data)throw new Error('MET AI returned no response.');
   if(r.data.error)throw new Error(r.data.error);
