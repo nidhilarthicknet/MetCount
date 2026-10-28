@@ -198,7 +198,10 @@ $('metAiForm').addEventListener('submit',async e=>{
   if(!r.data)throw new Error('MET AI returned no response.');
   if(r.data.error)throw new Error(r.data.error);
   const d=r.data,summary=d.analysis||d.summary||d.ai_summary||(d.market&&d.market.ai_summary)||JSON.stringify(d,null,2);
-  $('metAiOutput').textContent=String(summary);
+  const news=Array.isArray(d.news)?d.news:[];
+  const summaryHtml='<div class="list-item"><strong>'+(d.aiPowered?'MET AI analysis':'MET AI market summary (automatic fallback)')+'</strong><p style="white-space:pre-wrap;margin-bottom:0">'+esc(String(summary))+'</p></div>';
+  const newsHtml='<div class="list-item"><div class="split"><strong>Latest company headlines</strong><span class="pill">'+esc(d.newsSource||'Yahoo Finance')+'</span></div>'+(news.length?news.map(item=>'<div style="padding:12px 0;border-top:1px solid var(--line)"><strong>'+esc(item.title)+'</strong><p style="margin:6px 0;color:var(--muted)">'+esc(item.summary||'Open the publisher for the article details.')+'</p><small>'+esc(item.source||d.newsSource||'Yahoo Finance')+(item.publishedAt?' · '+esc(item.publishedAt):'')+'</small><div style="margin-top:8px"><a href="'+esc(item.link)+'" target="_blank" rel="noopener noreferrer">Read more ↗</a></div></div>').join(''):'<p class="muted">Live headlines are temporarily unavailable. The market summary above is still available.</p>')+'<small>Headlines and brief excerpts are attributed to their publisher. Open “Read more” for the full article.</small></div>';
+  $('metAiOutput').innerHTML=summaryHtml+newsHtml;
   $('stockTicker').value=quote.companyName;
   await searchStock();
  }catch(err){
