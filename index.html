@@ -233,7 +233,7 @@ $('businessPayForm').addEventListener('submit',async e=>{
     await refreshAll();await loadMetPay();await loadBusinessPays();await loadInstapay();await loadLoanRequests();
   }catch(err){setStatus('businessPayStatus',err.message||'Business payment failed.','error');}
 });
-const loanRateMap={1_day:{rate:1.5,days:1},1_week:{rate:3,days:7},2_weeks:{rate:6,days:14},1_month:{rate:9,days:30},6_months:{rate:30,days:180},1_year:{rate:50,days:365}};
+const loanRateMap={'1_day':{rate:1.5,days:1},'1_week':{rate:3,days:7},'2_weeks':{rate:6,days:14},'1_month':{rate:9,days:30},'6_months':{rate:30,days:180},'1_year':{rate:50,days:365}};
 function getLoanEstimate(){
   const amount=Number($('loanAmount')?.value||0),term=loanRateMap[$('loanTerm')?.value]||loanRateMap['1_day'];
   const effective=term.rate/10,interest=Number((Math.max(0,amount)*effective/100).toFixed(2));
